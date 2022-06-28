@@ -1,0 +1,3 @@
+is_global = true
+build_property.RootNamespace = applicationTEST1_ForSonarqube
+build_property.ProjectDir = C:\Users\pierr\source\tesxt\test1_asp.net\test1_aspnet\

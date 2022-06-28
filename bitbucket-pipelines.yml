@@ -1,0 +1,36 @@
+image: mcr.microsoft.com/dotnet/core/sdk:3.1 # Choose an image matching your project needs
+definitions:
+  caches:
+    sonar: ~/.sonar/cache
+clone:
+  depth: full              # SonarCloud scanner needs the full history to assign issues properly
+  steps:
+    - step: &build-test-sonarcloud
+        name: Build, test and analyze on SonarCloud
+        caches:
+        - sonar
+        script:
+          
+          - export TEST_NAME=test1_asp.net
+          - dotnet restore
+          - dotnet build $TEST_NAME
+          - dotnet test $TEST_NAME
+          - pipe: sonarsource/sonarcloud-scan:1.2.0 
+            variables:
+                SONAR_TOKEN: ${SONAR_TOKEN}  
+          - pipe: sonarsource/sonarcloud-quality-gate:0.1.6
+          - pipe: sonarsource/sonarcloud-scan:1.4.0
+    - step: &check-quality-gate-sonarcloud
+        name: Check the Quality Gate on SonarCloud
+        script:
+          - pipe: sonarsource/sonarcloud-quality-gate:0.1.6
+
+pipelines:         
+  branches:
+    master:
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
+  pull-requests:
+    '**':
+      - step: *build-test-sonarcloud
+      - step: *check-quality-gate-sonarcloud
